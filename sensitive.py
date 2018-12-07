@@ -39,10 +39,33 @@ the computed flow from u to v is given by F[u][v].
 def sensitive(G, s, t, F):
     """
     Sig:   graph G(V,E), int, int, int[0..|V|-1, 0..|V|-1] ==> int, int
-    Pre:    
-    Post:   
+    Pre:
+    Post:
     Ex:    sensitive(G,0,5,F) ==> (1, 3)
     """
+    print F
+
+    vertices = list(G)
+    print "verts:", vertices
+    g_util = {}
+    print "stuff", G[0][1]["capacity"]
+
+    for i in range(len(vertices)):
+        tmp = list(G.edges(vertices[i]))
+        tmp2 = []
+        for k in range(len(tmp)):
+            (node, neighbour) = tmp[k]
+            tmp2.append(neighbour)
+        edges = dict.fromkeys(tmp2)
+        print "nested dict: ", edges
+        for j in range(len(tmp)):
+            print tmp2[j]
+            print edges[tmp2[j]]
+            edges[tmp2[j]] = G[i][j]["capacity"]
+        g_util[vertices[i]] = edges
+
+    print "dict graph:", g_util
+
     return None, None
 
 
