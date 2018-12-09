@@ -18,8 +18,43 @@ def party(known):
     Post:
     Ex:     [[1,2],[0],[0]] ==> True, [0], [1,2]
     """
-    return False, [], []
+    A = []
+    B = []
+    guest_ID = 0;
 
+    for guest in known:
+        print "Looking at guest:", guest_ID, "With friends:", guest
+        if len(guest) == 0:
+            print "You have zero friends!"
+            A.append(guest_ID)
+        else:
+            friend_in_A = False
+            friend_in_B = False
+            for friend in guest:
+                print "Finding for friend", friend
+                if friend in A:
+                    print friend, "is in", A
+                    friend_in_A = True
+                elif friend in B:
+                    print friend, "is in", B
+                    friend_in_B = True
+
+            if friend_in_A and friend_in_B:
+                print "Friends in both tables!", A, B
+                return False, [], []
+
+            if friend_in_A:
+                B.append(guest_ID)
+            else:
+                A.append(guest_ID)
+
+        guest_ID += 1
+        print "----------------------------"
+
+
+    print "Table A:", A, "Table B:", B
+
+    return True, A, B
 
 class PartySeatingTest(unittest.TestCase):
     """Test suite for party seating problem
@@ -30,7 +65,8 @@ class PartySeatingTest(unittest.TestCase):
 
         A minimal test case.
         """
-        K = [[1,2],[0],[0]]
+        #K = [[1,2],[0],[0]]
+        K = [[9], [3], [], [1], [], [18], [7], [19, 11, 6], [15], [0, 13], [], [13, 7], [22, 23], [9, 11], [], [8], [], [20], [5], [20, 7], [17, 19], [], [12], [12], []]
         (found, A, B) = party(K)
         self.assertEqual(
             len(A) + len(B),
