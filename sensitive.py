@@ -58,18 +58,12 @@ def sensitive(G, s, t, F):
             edges[neighbours[j]] = G[vertices[i]][neighbours[j]]["capacity"]
         g_util[vertices[i]] = edges
 
-    v, u = None, None
-
     for vert in F:
         for inner_vert in F[vert]:
             if F[vert][inner_vert] == g_util[vert][inner_vert]:
-                v, u = vert, inner_vert
-                print vert, inner_vert
+                return vert, inner_vert
 
-    print F
-    print g_util
-
-    return v, u
+    return None, None
 
 
 class SensitiveSanityCheck(unittest.TestCase):
@@ -140,7 +134,7 @@ class SensitiveSanityCheck(unittest.TestCase):
             flow_g,
             "Returned non-sensitive edge ({},{})".format(u,v))
 
-    def est_sanity(self):
+    def test_sanity(self):
         """Sanity check"""
         # The attribute on each edge MUST be called "capacity"
         # (otherwise the max flow algorithm in run_test will fail).
@@ -262,7 +256,7 @@ class SensitiveSanityCheck(unittest.TestCase):
             #G[u][v]["capacity"] = G[u][v]["capacity"] - 1;
             #new_flow_g, new_F_g = max_flow(G, s, t);
 
-    def test_shit_test(self):
+    def est_shit_test(self):
         if (list(map(lambda x: int(x), nx.__version__.split("."))) < [1, 9]):
             max_flow = nx.ford_fulkerson
         else:
