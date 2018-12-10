@@ -24,13 +24,13 @@ def party(known):
 
     for guest in known:
         print "Looking at guest:", guest_ID, "With friends:", guest
-        if len(guest) == 0:
+        if len(guest) == 0: # If length of guest is 0, then they know no one.
             print "You have zero friends!"
             A.append(guest_ID)
         else:
             friend_in_A = False
             friend_in_B = False
-            for friend in guest:
+            for friend in guest: # Iterate over friends that guest know
                 print "Finding for friend", friend
                 if friend in A:
                     print friend, "is in", A
