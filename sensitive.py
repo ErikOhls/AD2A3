@@ -54,63 +54,151 @@ def graph_to_dict(G):
 
     return g_util
 
-def find_edges(G, s, t, F):
-    print s
-    vertices = list(G)
-    visited = []
-    stack = [s]
-    current = s
-    sensitive_vertex= []
+def graph_to_RGraph(G, F):
+    res_graph = {}
 
-    #F[s].itervalues().next()
+    for vertex in G:
+        nested_dict = {}
+        for next_vertex in G[vertex]:
+            nested_dict[next_vertex] = G[vertex][next_vertex] - F[vertex][next_vertex]
+        res_graph[vertex] = nested_dict
+
+    for vertex in G:
+        for next_vertex in G[vertex]:
+            remainder = G[vertex][next_vertex] - F[vertex][next_vertex]
+            if remainder > 0 and remainder < G[vertex][next_vertex]: # Add back edge
+                res_graph[next_vertex][vertex] = -1 * F[vertex][next_vertex] + G[vertex][next_vertex]
+
+    return res_graph
+
+def find_sensitive_edge(res_graph, s):
+    visited = []
+    current = s
+    stack = [current]
+
     while stack:
-        print "iteratinf", current, F[current]
+        print "Iterating on:", current, res_graph[current]
         visited.append(current)
         counter = 0
-        limit = len(F[current])
-        if not F[current]:
+        limit = len(res_graph[current])
+
+        if not res_graph[current]:
             stack.pop(-1)
 
-        for inner_vert in F[current]:
+        for next_vert in res_graph[current]:
+            print "Looking at: ", next_vert
             counter += 1
-            print counter, limit
-            print "inner_vert", inner_vert
-            if inner_vert not in visited and not F[current][inner_vert] == G[current][inner_vert]:
-                print "Ny"
-                current = inner_vert
+
+            if next_vert not in visited and res_graph[current][next_vert] > 0:
+                print "Delving deeper"
+                current = next_vert
                 stack.append(current)
                 break
+
             if counter == limit:
                 if stack:
                     stack.pop(-1)
-                print "poping"
+                    print "End of adjecent vertices, popping stack"
+
         if stack:
-            print stack
             current = stack[-1]
+            print "Stack:", stack
 
-    print "visited", visited
+    unvisited = []
 
-    for vertex in vertices:
-        if vertex not in visited:
-            sensitive_vertex.append(vertex)
+    for key in res_graph.keys():
+        if key not in visited:
+            unvisited.append(key)
 
+    print unvisited, "--------------------------"
 
+    visited = []
+    current = s
+    stack = [current]
+    while stack:
+        print "Iterating on:", current, res_graph[current]
+        visited.append(current)
+        counter = 0
+        limit = len(res_graph[current])
 
-    for vert in F:
-        for next_vert in F[vert]:
-            if next_vert in sensitive_vertex:
-                print vert, next_vert
-                return vert, next_vert
+        if not res_graph[current]:
+            stack.pop(-1)
 
-    '''
-    for vert in F:
-        print "looking at vert:", vert
-        for inner_vert in F[vert]:
-            print "looking at edge:", inner_vert
-            print F[vert][inner_vert], g_util[vert][inner_vert]
-            if F[vert][inner_vert] == g_util[vert][inner_vert]:
-    return true
-    '''
+        for next_vert in res_graph[current]:
+            print "Looking at: ", next_vert
+            counter += 1
+
+            if next_vert in unvisited:
+                print "Found!", current, next_vert
+                return current, next_vert
+
+            if next_vert not in visited and res_graph[current][next_vert] > 0:
+                print "Delving deeper"
+                current = next_vert
+                stack.append(current)
+                break
+
+            if counter == limit:
+                if stack:
+                    stack.pop(-1)
+                    print "End of adjecent vertices, popping stack"
+
+        if stack:
+            current = stack[-1]
+            print "Stack:", stack
+
+    return None, None
+
+def find_sensitive_edge2(res_graph, s):
+    second_run = False
+    for i in range(2):
+        visited = []
+        current = s
+        stack = [current]
+
+        while stack:
+            print "Iterating on:", current, res_graph[current]
+            visited.append(current)
+            counter = 0
+            limit = len(res_graph[current])
+
+            if not res_graph[current]:
+                stack.pop(-1)
+
+            for next_vert in res_graph[current]:
+                print "Looking at: ", next_vert
+                counter += 1
+
+                if second_run:
+                    if next_vert in unvisited:
+                        print "Found!", current, next_vert
+                        return current, next_vert
+
+                if next_vert not in visited and res_graph[current][next_vert] > 0:
+                    print "Delving deeper"
+                    current = next_vert
+                    stack.append(current)
+                    break
+
+                if counter == limit:
+                    if stack:
+                        stack.pop(-1)
+                        print "End of adjecent vertices, popping stack"
+
+            if stack:
+                current = stack[-1]
+                print "Stack:", stack
+
+        unvisited = []
+
+        for key in res_graph.keys():
+            if key not in visited:
+                unvisited.append(key)
+
+        print unvisited, "--------------------------"
+        second_run = True
+
+    return None, None
 
 def sensitive(G, s, t, F):
     """
@@ -120,9 +208,9 @@ def sensitive(G, s, t, F):
     Ex:    sensitive(G,0,5,F) ==> (1, 3)
     """
     g_util = graph_to_dict(G)
-    result = find_edges(g_util, s, t, F)
-
-    return result
+    res_graph = graph_to_RGraph(g_util, F)
+    
+    return find_sensitive_edge2(res_graph, s)
 
 class SensitiveSanityCheck(unittest.TestCase):
     """
@@ -192,7 +280,7 @@ class SensitiveSanityCheck(unittest.TestCase):
             flow_g,
             "Returned non-sensitive edge ({},{})".format(u,v))
 
-    def est_sanity(self):
+    def test_sanity(self):
         """Sanity check"""
         # The attribute on each edge MUST be called "capacity"
         # (otherwise the max flow algorithm in run_test will fail).
@@ -208,7 +296,7 @@ class SensitiveSanityCheck(unittest.TestCase):
         self.run_test(0,5,draw=True)
 
 
-    def est_shit_test(self): # Works when refactored
+    def test_shit_test(self): # Works when refactored
         self.G.add_edge(0, 2, capacity = 164)
         self.G.add_edge(0, 3, capacity = 209)
         self.G.add_edge(0, 4, capacity = 111)
@@ -238,7 +326,7 @@ class SensitiveSanityCheck(unittest.TestCase):
 
         self.run_test(s,t,draw=True)
 
-    def est_new_test(self): # Returns non sensitive edge
+    def test_new_test(self): # Returns non sensitive edge
         self.G.add_edge(0, 1, capacity = 17)
         self.G.add_edge(0, 2, capacity = 111)
         self.G.add_edge(0, 4, capacity = 67)
@@ -333,7 +421,7 @@ class SensitiveSanityCheck(unittest.TestCase):
         print new_flow_g, "<", flow_g, "?"
         # Expected output: new_flow_g < flow_g
 
-    def est_small2(self):
+    def test_small2(self):
         max_flow = nx.maximum_flow
         G = nx.complete_graph(7, create_using=nx.DiGraph());
 
