@@ -3,8 +3,8 @@
 '''
 Assignment 3: Controlling Maximum Flow
 
-Team Number: 
-Student Names: 
+Team Number:
+Student Names:
 '''
 
 import unittest
@@ -36,14 +36,8 @@ F is represented in python as a dictionary of dictionaries;
 i.e., given two nodes u and v,
 the computed flow from u to v is given by F[u][v].
 """
-def sensitive(G, s, t, F):
-    """
-    Sig:   graph G(V,E), int, int, int[0..|V|-1, 0..|V|-1] ==> int, int
-    Pre:
-    Post:
-    Ex:    sensitive(G,0,5,F) ==> (1, 3)
-    """
 
+def graph_to_dict(G):
     vertices = list(G)
     g_util = {}
 
@@ -58,19 +52,77 @@ def sensitive(G, s, t, F):
             edges[neighbours[j]] = G[vertices[i]][neighbours[j]]["capacity"]
         g_util[vertices[i]] = edges
 
-    print F
-    print g_util
+    return g_util
 
+def find_edges(G, s, t, F):
+    print s
+    vertices = list(G)
+    visited = []
+    stack = [s]
+    current = s
+    sensitive_vertex= []
+
+    #F[s].itervalues().next()
+    while stack:
+        print "iteratinf", current, F[current]
+        visited.append(current)
+        counter = 0
+        limit = len(F[current])
+        if not F[current]:
+            stack.pop(-1)
+
+        for inner_vert in F[current]:
+            counter += 1
+            print counter, limit
+            print "inner_vert", inner_vert
+            if inner_vert not in visited and not F[current][inner_vert] == G[current][inner_vert]:
+                print "Ny"
+                current = inner_vert
+                stack.append(current)
+                break
+            if counter == limit:
+                if stack:
+                    stack.pop(-1)
+                print "poping"
+        if stack:
+            print stack
+            current = stack[-1]
+
+    print "visited", visited
+
+    for vertex in vertices:
+        if vertex not in visited:
+            sensitive_vertex.append(vertex)
+
+
+
+    for vert in F:
+        for next_vert in F[vert]:
+            if next_vert in sensitive_vertex:
+                print vert, next_vert
+                return vert, next_vert
+
+    '''
     for vert in F:
         print "looking at vert:", vert
         for inner_vert in F[vert]:
             print "looking at edge:", inner_vert
             print F[vert][inner_vert], g_util[vert][inner_vert]
             if F[vert][inner_vert] == g_util[vert][inner_vert]:
-                return vert, inner_vert
+    return true
+    '''
 
-    return None, None
+def sensitive(G, s, t, F):
+    """
+    Sig:   graph G(V,E), int, int, int[0..|V|-1, 0..|V|-1] ==> int, int
+    Pre:
+    Post:
+    Ex:    sensitive(G,0,5,F) ==> (1, 3)
+    """
+    g_util = graph_to_dict(G)
+    result = find_edges(g_util, s, t, F)
 
+    return result
 
 class SensitiveSanityCheck(unittest.TestCase):
     """
@@ -281,7 +333,7 @@ class SensitiveSanityCheck(unittest.TestCase):
         print new_flow_g, "<", flow_g, "?"
         # Expected output: new_flow_g < flow_g
 
-    def test_small2(self):
+    def est_small2(self):
         max_flow = nx.maximum_flow
         G = nx.complete_graph(7, create_using=nx.DiGraph());
 
@@ -333,6 +385,7 @@ class SensitiveSanityCheck(unittest.TestCase):
         t = 3;
         flow_g, F_g = max_flow(G, s, t);
         u,v = sensitive(G.copy(), s, t, F_g);
+        print u, v
         G[u][v]["capacity"] = G[u][v]["capacity"] - 1;
         new_flow_g, new_F_g = max_flow(G, s, t);
         print new_flow_g, "<", flow_g, "?"
