@@ -90,10 +90,10 @@ def find_sensitive_edge(res_graph, s):
             counter += 1
 
             if next_vert not in visited and res_graph[current][next_vert] > 0:
-                print "Delving deeper"
-                current = next_vert
-                stack.append(current)
-                break
+                    print "Delving deeper"
+                    current = next_vert
+                    stack.append(current)
+                    break
 
             if counter == limit:
                 if stack:
@@ -110,93 +110,15 @@ def find_sensitive_edge(res_graph, s):
         if key not in visited:
             unvisited.append(key)
 
-    print unvisited, "--------------------------"
+    print "Unvisited nodes:", unvisited, "--------------------------"
 
-    visited = []
-    current = s
-    stack = [current]
-    while stack:
-        print "Iterating on:", current, res_graph[current]
-        visited.append(current)
-        counter = 0
-        limit = len(res_graph[current])
+    visited = list(set(visited)) # Remove duplicates
 
-        if not res_graph[current]:
-            stack.pop(-1)
-
-        for next_vert in res_graph[current]:
-            print "Looking at: ", next_vert
-            counter += 1
-
-            if next_vert in unvisited:
-                print "Found!", current, next_vert
-                return current, next_vert
-
-            if next_vert not in visited and res_graph[current][next_vert] > 0:
-                print "Delving deeper"
-                current = next_vert
-                stack.append(current)
-                break
-
-            if counter == limit:
-                if stack:
-                    stack.pop(-1)
-                    print "End of adjecent vertices, popping stack"
-
-        if stack:
-            current = stack[-1]
-            print "Stack:", stack
-
-    return None, None
-
-def find_sensitive_edge2(res_graph, s):
-    second_run = False
-    for i in range(2):
-        visited = []
-        current = s
-        stack = [current]
-
-        while stack:
-            print "Iterating on:", current, res_graph[current]
-            visited.append(current)
-            counter = 0
-            limit = len(res_graph[current])
-
-            if not res_graph[current]:
-                stack.pop(-1)
-
-            for next_vert in res_graph[current]:
-                print "Looking at: ", next_vert
-                counter += 1
-
-                if second_run:
-                    if next_vert in unvisited:
-                        print "Found!", current, next_vert
-                        return current, next_vert
-
-                if next_vert not in visited and res_graph[current][next_vert] > 0:
-                    print "Delving deeper"
-                    current = next_vert
-                    stack.append(current)
-                    break
-
-                if counter == limit:
-                    if stack:
-                        stack.pop(-1)
-                        print "End of adjecent vertices, popping stack"
-
-            if stack:
-                current = stack[-1]
-                print "Stack:", stack
-
-        unvisited = []
-
-        for key in res_graph.keys():
-            if key not in visited:
-                unvisited.append(key)
-
-        print unvisited, "--------------------------"
-        second_run = True
+    for key in visited:
+        for vertex in res_graph[key]:
+            if vertex in unvisited:
+                print "Found:", key, vertex
+                return key, vertex
 
     return None, None
 
@@ -209,8 +131,8 @@ def sensitive(G, s, t, F):
     """
     g_util = graph_to_dict(G)
     res_graph = graph_to_RGraph(g_util, F)
-    
-    return find_sensitive_edge2(res_graph, s)
+
+    return find_sensitive_edge(res_graph, s)
 
 class SensitiveSanityCheck(unittest.TestCase):
     """
