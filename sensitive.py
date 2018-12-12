@@ -38,33 +38,68 @@ the computed flow from u to v is given by F[u][v].
 """
 
 def graph_to_dict(G):
+    """
+    Sig:   graph G(V,E), ==> dict g_util{V:[0..|E|]}
+    Pre:
+    Post:
+    Ex:    G = {0 {1: {'capacity': 20}} 1 {0: {'capacity': 20}}}
+           graph_to_dict(G) ==> {0{1: 20} 1{0: 20}}
+    """
     vertices = list(G)
+    # List containing all vertices in G
+    # Type: int[]
     g_util = {}
+    # Dictionary containing all vertecis, and their edges, with respective capacity
+    # Type: int{int{}}
 
     for i in range(len(vertices)):
+    # Invariant: len(vertices)
+    #   variant: len(vertices)-1
         tmp = list(G.edges(vertices[i]))
         neighbours = []
         for k in range(len(tmp)):
+        # Invariant: len(tmp)
+        #   variant: lent(tmp)-1
             (node, neighbour) = tmp[k]
             neighbours.append(neighbour)
         edges = dict.fromkeys(neighbours)
         for j in range(len(tmp)):
+        # Invariant: len(tmp)
+        #   variant: len(tmp)-1
             edges[neighbours[j]] = G[vertices[i]][neighbours[j]]["capacity"]
         g_util[vertices[i]] = edges
 
     return g_util
 
 def graph_to_RGraph(G, F):
+    """
+    Sig:   graph G(V,E), dict F{V:[0..|E|]} ==> res_graph{V:[0..|E|]}
+    Pre:
+    Post:
+    Ex:    G = {0{1: 20} 1{0: 20}}
+           F = {0{1: 5} 1{0: 5}}
+           graph_to_RGraph(G) ==> {0{1: 15} 1{0: 15}}
+    """
+    # Dictionary containing all vertecis, and their edges, with respective remaining capacity
+    # Type: int{int{}}
     res_graph = {}
 
     for vertex in G:
+    # Invariant: len(G)
+    #   variant: len(G)-1
         nested_dict = {}
         for next_vertex in G[vertex]:
+        # Invariant: len(G[vertex])
+        #   variant: len(G[vertex])-1
             nested_dict[next_vertex] = G[vertex][next_vertex] - F[vertex][next_vertex]
         res_graph[vertex] = nested_dict
 
     for vertex in G:
+    # Invariant: len(G)
+    #   variant: len(G)-1
         for next_vertex in G[vertex]:
+        # Invariant: len(G[vertex])
+        #   variant: len(G[vertex])-1
             remainder = G[vertex][next_vertex] - F[vertex][next_vertex]
             if remainder > 0 and remainder < G[vertex][next_vertex]: # Add back edge
                 res_graph[next_vertex][vertex] = -1 * F[vertex][next_vertex] + G[vertex][next_vertex]
@@ -73,10 +108,15 @@ def graph_to_RGraph(G, F):
 
 def find_sensitive_edge(res_graph, s):
     visited = []
+    # List containing all vertices which has been visited by the algorithm
+    # Type: int[]
     current = s
     stack = [current]
+    # Stack containing last visited vertex in graph
+    # Type: a[] where a is a entry in the dictionary res_graph
 
     while stack:
+    # Variant: stack
         print "Iterating on:", current, res_graph[current]
         visited.append(current)
         counter = 0
@@ -86,6 +126,8 @@ def find_sensitive_edge(res_graph, s):
             stack.pop(-1)
 
         for next_vert in res_graph[current]:
+        # Invariant: len(res_graph[current])
+        #   Variant: len(res_graph[current])-1
             print "Looking at: ", next_vert
             counter += 1
 
@@ -105,8 +147,12 @@ def find_sensitive_edge(res_graph, s):
             print "Stack:", stack
 
     unvisited = []
+    # List containing all vertices in graph which has not been visited
+    # Type: int[]
 
     for key in res_graph.keys():
+    # Invariant: len(res_graph.keys())
+    #   Variant: len(res_graph.keys())-1
         if key not in visited:
             unvisited.append(key)
 
@@ -115,7 +161,11 @@ def find_sensitive_edge(res_graph, s):
     visited = list(set(visited)) # Remove duplicates
 
     for key in visited:
+    # Invariant: len(visited)
+    #   Variant: len(visited)-1
         for vertex in res_graph[key]:
+        # Invariant: len(res_graph[key])
+        #   Variant: len(res_graph[key])-1
             if vertex in unvisited:
                 print "Found:", key, vertex
                 return key, vertex
@@ -129,6 +179,8 @@ def sensitive(G, s, t, F):
     Post:
     Ex:    sensitive(G,0,5,F) ==> (1, 3)
     """
+
+    print G[0]
     g_util = graph_to_dict(G)
     res_graph = graph_to_RGraph(g_util, F)
 
