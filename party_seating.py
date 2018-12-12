@@ -22,23 +22,18 @@ def party(known):
     A = []
     B = []
     guest_ID = 0
-    '''
-    G = nx.Graph()
 
-    for guest in known:
-        G.add_node(guest_ID)
-        if not len(guest) == 0:
-            for acquaintance in known[guest_ID]:
-                G.add_edge(guest_ID, acquaintance)
-        guest_ID += 1
-
-    print G.adjacency_list()
-    '''
     for guest in known:
         print "Looking at guest:", guest_ID, "With friends:", guest
-        if len(guest) == 0: # If length of guest is 0, then they know no one.
+
+        #if guest_ID == 6:
+        #    B.append(guest_ID)
+
+        elif len(guest) == 0: # If length of guest is 0, then they know no one.
             print "You have zero friends!"
+            print "Adding to table A"
             A.append(guest_ID)
+
         else:
             friend_in_A = False
             friend_in_B = False
@@ -56,8 +51,10 @@ def party(known):
                 return False, [], []
 
             if friend_in_A:
+                print "adding to table B"
                 B.append(guest_ID)
             else:
+                print "adding to table A"
                 A.append(guest_ID)
 
         guest_ID += 1
@@ -79,6 +76,8 @@ class PartySeatingTest(unittest.TestCase):
         """
         #K = [[1,2],[0],[0]]
         K = [[9], [3], [], [1], [], [18], [7], [19, 11, 6], [15], [0, 13], [], [13, 7], [22, 23], [9, 11], [], [8], [], [20], [5], [20, 7], [17, 19], [], [12], [12], []]
+        #K = [[9], [3], [], [1], [], [18], [7], [19, 11, 6], [15], [0, 13], [], [13, 7], [22, 23], [], [8], [], [20], [5], [20, 7], [17, 19], [], [12], [12], [], [9, 11]]
+        #K = [[], [], [], [8], [], [], [], [], [3], [], [], [], [], [], [16], [], [14]]
 
         (found, A, B) = party(K)
         self.assertEqual(
