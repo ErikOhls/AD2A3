@@ -453,6 +453,113 @@ class SensitiveSanityCheck(unittest.TestCase):
         print new_flow_g, "<", flow_g, "?"
         # Expected output: new_flow_g < flow_g
 
+    def test_failed(self):
+        max_flow = nx.maximum_flow
+        G = nx.complete_graph(7, create_using=nx.DiGraph());
+
+        G.remove_edge(0,1);
+        G.remove_edge(0,2);
+        G.remove_edge(0,3);
+        G.remove_edge(0,4);
+        G.remove_edge(0,7);
+        G.remove_edge(0,9);
+        G.remove_edge(1,2);
+        G.remove_edge(1,5);
+        G.remove_edge(1,6);
+        G.remove_edge(2,5);
+        G.remove_edge(2,7);
+        G.remove_edge(2,8);
+        G.remove_edge(3,1);
+        G.remove_edge(3,2);
+        G.remove_edge(3,6);
+        G.remove_edge(3,9);
+        G.remove_edge(4,1);
+        G.remove_edge(4,2);
+        G.remove_edge(4,3);
+        G.remove_edge(4,9);
+        G.remove_edge(5,0);
+        G.remove_edge(5,3);
+        G.remove_edge(5,4);
+        G.remove_edge(5,6);
+        G.remove_edge(5,7);
+        G.remove_edge(5,8);
+        G.remove_edge(6,0);
+        G.remove_edge(6,2);
+        G.remove_edge(6,4);
+        G.remove_edge(6,9);
+        G.remove_edge(7,1);
+        G.remove_edge(7,3);
+        G.remove_edge(7,4);
+        G.remove_edge(7,6);
+        G.remove_edge(7,8);
+        G.remove_edge(7,9);
+        G.remove_edge(8,0);
+        G.remove_edge(8,1);
+        G.remove_edge(8,3);
+        G.remove_edge(8,4);
+        G.remove_edge(8,6);
+        G.remove_edge(8,9);
+        G.remove_edge(9,1);
+        G.remove_edge(9,2);
+        G.remove_edge(9,5);
+        G.remove_edge(1,4);
+        G.remove_edge(2,4);
+        G.remove_edge(3,4);
+        G.remove_edge(9,4);
+        G.remove_edge(3,0);
+        G.remove_edge(3,5);
+        G.remove_edge(3,7);
+        G.remove_edge(3,8);
+
+        G[0][5]['capacity'] = 70;
+        G[0][6]['capacity'] = 3;
+        G[0][8]['capacity'] = 212;
+        G[1][0]['capacity'] = 49;
+        G[1][3]['capacity'] = 2;
+        G[1][7]['capacity'] = 152;
+        G[1][8]['capacity'] = 147;
+        G[1][9]['capacity'] = 63;
+        G[2][0]['capacity'] = 53;
+        G[2][1]['capacity'] = 26;
+        G[2][3]['capacity'] = 221;
+        G[2][6]['capacity'] = 47;
+        G[2][9]['capacity'] = 26;
+        G[4][0]['capacity'] = 252;
+        G[4][5]['capacity'] = 168;
+        G[4][6]['capacity'] = 91;
+        G[4][7]['capacity'] = 143;
+        G[4][8]['capacity'] = 254;
+        G[5][1]['capacity'] = 34;
+        G[5][2]['capacity'] = 40;
+        G[5][9]['capacity'] = 230;
+        G[6][1]['capacity'] = 17;
+        G[6][3]['capacity'] = 389;
+        G[6][5]['capacity'] = 423;
+        G[6][7]['capacity'] = 3;
+        G[6][8]['capacity'] = 94;
+        G[7][0]['capacity'] = 66;
+        G[7][2]['capacity'] = 66;
+        G[7][5]['capacity'] = 323;
+        G[8][2]['capacity'] = 237;
+        G[8][5]['capacity'] = 178;
+        G[8][7]['capacity'] = 51;
+        G[9][0]['capacity'] = 270;
+        G[9][3]['capacity'] = 157;
+        G[9][6]['capacity'] = 200;
+        G[9][7]['capacity'] = 239;
+        G[9][8]['capacity'] = 108;
+
+        s = 4;
+        t = 3;
+
+        flow_g, F_g = max_flow(G, s, t);
+        u,v = sensitive(G.copy(), s, t, F_g);
+        print u, v
+        G[u][v]["capacity"] = G[u][v]["capacity"] - 1;
+        new_flow_g, new_F_g = max_flow(G, s, t);
+        print new_flow_g, "<", flow_g, "?"
+        # Expected output: new_flow_g < flow_g
+
     @classmethod
     def tearDownClass(cls):
         if HAVE_PLT:
