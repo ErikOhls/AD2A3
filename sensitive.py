@@ -101,12 +101,12 @@ def graph_to_RGraph(G, F):
         # Invariant: len(G[vertex])
         #   variant: len(G[vertex])-1
             remainder = G[vertex][next_vertex] - F[vertex][next_vertex]
-            if remainder > 0: #remainder < G[vertex][next_vertex]: #and remainder > 0: # Add back edge
+            if remainder > 0 or G[vertex][next_vertex] == F[vertex][next_vertex]:
                 res_graph[next_vertex][vertex] = F[vertex][next_vertex]
 
     return res_graph
 
-def find_sensitive_edge(res_graph, s, t, g_util):
+def find_sensitive_edge(res_graph, s, t, g_util, F):
     visited = []
     # List containing all vertices which has been visited by the algorithm
     # Type: int[]
@@ -191,6 +191,34 @@ def find_sensitive_edge(res_graph, s, t, g_util):
 
     return None, None
 
+def find_path(G, s, t):
+    visited = []
+    current = s
+    stack = [current]
+
+    while(stack):
+        print "Iterating on:", current, G[current]
+        visited.append(current)
+        if current == t:
+            break
+
+        for next_vert in G[current]:
+            print "Looking at:", next_vert
+
+            if next_vert not in visited and G[current][next_vert] > 0:
+                return
+
+
+    return
+
+
+
+def make_residual(G, s, t):
+    flow, path = 0, True
+
+    while(path):
+        flow, path = find_path(G, s, t)
+
 def sensitive(G, s, t, F):
     """
     Sig:   graph G(V,E), int, int, int[0..|V|-1, 0..|V|-1] ==> int, int
@@ -199,12 +227,15 @@ def sensitive(G, s, t, F):
     Ex:    sensitive(G,0,5,F) ==> (1, 3)
     """
 
-    print G[0]
+
     g_util = graph_to_dict(G)
     res_graph = graph_to_RGraph(g_util, F)
+
+    print g_util
+    print F
     print res_graph
 
-    return find_sensitive_edge(res_graph, s, t, g_util)
+    return find_sensitive_edge(res_graph, s, t, g_util, F)
 
 class SensitiveSanityCheck(unittest.TestCase):
     """
@@ -526,8 +557,6 @@ class SensitiveSanityCheck(unittest.TestCase):
             self.G[5][2]['capacity'] = 58;
             self.G[5][3]['capacity'] = 3;
 
-            nx.build_residual_network(self.G)
-
             s = 1;
             t = 6;
 
@@ -540,6 +569,74 @@ class SensitiveSanityCheck(unittest.TestCase):
             print new_flow_g, "<", flow_g, "?"
             # Expected output: new_flow_g < flow_g
             '''
+
+    def test_abc(self):
+        max_flow = nx.maximum_flow
+        self.G = nx.complete_graph(8, create_using=nx.DiGraph());
+
+        self.G.remove_edge(0,2);
+        self.G.remove_edge(0,3);
+        self.G.remove_edge(0,4);
+        self.G.remove_edge(0,5);
+        self.G.remove_edge(0,6);
+        self.G.remove_edge(0,7);
+        self.G.remove_edge(1,0);
+        self.G.remove_edge(1,2);
+        self.G.remove_edge(1,6);
+        self.G.remove_edge(2,4);
+        self.G.remove_edge(2,6);
+        self.G.remove_edge(3,1);
+        self.G.remove_edge(3,2);
+        self.G.remove_edge(3,6);
+        self.G.remove_edge(3,7);
+        self.G.remove_edge(4,1);
+        self.G.remove_edge(4,3);
+        self.G.remove_edge(4,5);
+        self.G.remove_edge(4,6);
+        self.G.remove_edge(4,7);
+        self.G.remove_edge(5,1);
+        self.G.remove_edge(5,2);
+        self.G.remove_edge(5,3);
+        self.G.remove_edge(5,7);
+        self.G.remove_edge(6,5);
+        self.G.remove_edge(6,7);
+        self.G.remove_edge(7,1);
+        self.G.remove_edge(7,2);
+        self.G.remove_edge(5,6);
+        self.G.remove_edge(7,6);
+        self.G.remove_edge(5,0);
+        self.G.remove_edge(5,4);
+
+        self.G[0][1]['capacity'] = 165;
+        self.G[1][3]['capacity'] = 224;
+        self.G[1][4]['capacity'] = 152;
+        self.G[1][5]['capacity'] = 56;
+        self.G[1][7]['capacity'] = 11;
+        self.G[2][0]['capacity'] = 132;
+        self.G[2][1]['capacity'] = 55;
+        self.G[2][3]['capacity'] = 39;
+        self.G[2][5]['capacity'] = 106;
+        self.G[2][7]['capacity'] = 163;
+        self.G[3][0]['capacity'] = 60;
+        self.G[3][4]['capacity'] = 150;
+        self.G[3][5]['capacity'] = 169;
+        self.G[4][0]['capacity'] = 84;
+        self.G[4][2]['capacity'] = 53;
+        self.G[6][0]['capacity'] = 108;
+        self.G[6][1]['capacity'] = 126;
+        self.G[6][2]['capacity'] = 31;
+        self.G[6][3]['capacity'] = 69;
+        self.G[6][4]['capacity'] = 82;
+        self.G[7][0]['capacity'] = 2;
+        self.G[7][3]['capacity'] = 87;
+        self.G[7][4]['capacity'] = 45;
+        self.G[7][5]['capacity'] = 36;
+
+        s = 6;
+        t = 5;
+
+        self.run_test(s,t,draw=True)
+
 
     @classmethod
     def tearDownClass(cls):
