@@ -74,14 +74,8 @@ def party(known):
         else:
             friend_in_A = False
             friend_in_B = False
-            for friend in guest: # Iterate over friends that guest know
-                print "Finding for friend", friend
-                if friend in A:
-                    print friend, "is in", A
-                    friend_in_A = True
-                elif friend in B:
-                    print friend, "is in", B
-                    friend_in_B = True
+
+            friend_in_A, friend_in_B = deep_search(known, A, B, guest, [], friend_in_A, friend_in_B)
 
             if friend_in_A and friend_in_B:
                 print "Friends in both tables!", A, B
@@ -102,6 +96,33 @@ def party(known):
 
     return True, A, B
 
+def deep_search(known, A, B, guest, visited, friend_in_A, friend_in_B):
+    current = known.index(guest)
+    if current not in visited:
+        visited.append(current)
+
+        for friend in guest: # Iterate over friends that guest know
+            print "Finding for friend", friend
+            if friend in A:
+                print friend, "is in", A
+                friend_in_A = True
+            elif friend in B:
+                print friend, "is in", B
+                friend_in_B = True
+
+            if not friend_in_A and not friend_in_B:
+                print "Recursive", guest
+                for friend in guest:
+                    for n_friend in known[friend]:
+                        print "calling for", friend
+                        in_A, in_B = deep_search(known, A, B, known[n_friend], visited, friend_in_A, friend_in_B)
+                        if in_A:
+                            friend_in_A = True
+                        if in_B:
+                            friend_in_B = True
+
+    return friend_in_A, friend_in_B
+
 class PartySeatingTest(unittest.TestCase):
     """Test suite for party seating problem
     """
@@ -112,10 +133,10 @@ class PartySeatingTest(unittest.TestCase):
         A minimal test case.
         """
         #K = [[1,2],[0],[0]]
-        #K = [[9], [3], [], [1], [], [18], [7], [19, 11, 6], [15], [0, 13], [], [13, 7], [22, 23], [9, 11], [], [8], [], [20], [5], [20, 7], [17, 19], [], [12], [12], []]
+        K = [[9], [3], [], [1], [], [18], [7], [19, 11, 6], [15], [0, 13], [], [13, 7], [22, 23], [9, 11], [], [8], [], [20], [5], [20, 7], [17, 19], [], [12], [12], []]
         #K = [[9], [3], [], [1], [], [18], [7], [19, 11, 6], [15], [0, 13], [], [13, 7], [22, 23], [], [8], [], [20], [5], [20, 7], [17, 19], [], [12], [12], [], [9, 11]]
         #K = [[], [], [], [8], [], [], [], [], [3], [], [], [], [], [], [16], [], [14]]
-        K = [[13], [3], [25, 30], [1, 11, 12], [14], [26], [26], [19], [], [11], [], [9, 3, 13, 14], [3], [0, 11], [11, 4], [], [], [], [], [29, 7], [], [], [25, 29], [], [], [2, 22], [5, 6], [], [], [19, 22], [2]]
+        #K = [[13], [3], [25, 30], [1, 11, 12], [14], [26], [26], [19], [], [11], [], [9, 3, 13, 14], [3], [0, 11], [11, 4], [], [], [], [], [29, 7], [], [], [25, 29], [], [], [2, 22], [5, 6], [], [], [19, 22], [2]]
 
         (found, A, B) = party(K)
         self.assertEqual(
