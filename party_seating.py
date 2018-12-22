@@ -57,18 +57,18 @@ def party(known):
     Ex:     [[1,2],[0],[0]] ==> True, [0], [1,2]
     """
     A = []
+    # List containing all guests seated at table A
+    # Type: int[]
     B = []
+    # List containing all guests seated at table B
+    # Type: int[]
     guest_ID = 0
 
     for guest in known:
-        print "Looking at guest:", guest_ID, "With friends:", guest
-
-        #if guest_ID == 6:
-        #    B.append(guest_ID)
+    # Invariant: len(known)
+    #   Variant: len(known)-1
 
         if len(guest) == 0: # If length of guest is 0, then they know no one.
-            print "You have zero friends!"
-            print "Adding to table A"
             A.append(guest_ID)
 
         else:
@@ -78,48 +78,49 @@ def party(known):
             friend_in_A, friend_in_B = deep_search(known, A, B, guest, [], friend_in_A, friend_in_B)
 
             if friend_in_A and friend_in_B:
-                print "Friends in both tables!", A, B
                 return False, [], []
 
             if friend_in_A:
-                print "adding to table B"
                 B.append(guest_ID)
             else:
-                print "adding to table A"
                 A.append(guest_ID)
 
         guest_ID += 1
-        print "----------------------------"
-
-
-    print "Table A:", A, "Table B:", B
 
     return True, A, B
 
 def deep_search(known, A, B, guest, visited, friend_in_A, friend_in_B):
+    # Invariant: len(guest)
+    #   Variant: len(guest)-1
+    """
+    Sig:    int[1..m, 1..n], int[0..x], int[0..y], int[], boolean, boolean \
+            ==> boolean, boolean
+    Pre:
+    Post:
+    Ex:     [[1,2],[0],[0]], [],  [], 0, [], False, False ==> False, False
+            [[1,2],[0],[0]], [1], [], 0, [], False, False ==> True,  False
+    """
     current = known.index(guest)
     if current not in visited:
         visited.append(current)
 
         for friend in guest: # Iterate over friends that guest know
-            print "Finding for friend", friend
+        # Invariant: len(guest)
+        #   Variant: len(guest)-1
             if friend in A:
-                print friend, "is in", A
                 friend_in_A = True
             elif friend in B:
-                print friend, "is in", B
                 friend_in_B = True
 
             if not friend_in_A and not friend_in_B:
-                print "Recursive", guest
-                for friend in guest:
-                    for n_friend in known[friend]:
-                        print "calling for", friend
-                        in_A, in_B = deep_search(known, A, B, known[n_friend], visited, friend_in_A, friend_in_B)
-                        if in_A:
-                            friend_in_A = True
-                        if in_B:
-                            friend_in_B = True
+                for n_friend in known[friend]:
+                # Invariant: len(known[friend])
+                #   Variant: len(known[friend])-1
+                    in_A, in_B = deep_search(known, A, B, known[n_friend], visited, friend_in_A, friend_in_B)
+                    if in_A:
+                        friend_in_A = True
+                    if in_B:
+                        friend_in_B = True
 
     return friend_in_A, friend_in_B
 
@@ -127,16 +128,13 @@ class PartySeatingTest(unittest.TestCase):
     """Test suite for party seating problem
     """
 
-    def test_sanity(self):
+    def est_sanity(self):
         """Sanity test
 
         A minimal test case.
         """
-        #K = [[1,2],[0],[0]]
+
         K = [[9], [3], [], [1], [], [18], [7], [19, 11, 6], [15], [0, 13], [], [13, 7], [22, 23], [9, 11], [], [8], [], [20], [5], [20, 7], [17, 19], [], [12], [12], []]
-        #K = [[9], [3], [], [1], [], [18], [7], [19, 11, 6], [15], [0, 13], [], [13, 7], [22, 23], [], [8], [], [20], [5], [20, 7], [17, 19], [], [12], [12], [], [9, 11]]
-        #K = [[], [], [], [8], [], [], [], [], [3], [], [], [], [], [], [16], [], [14]]
-        #K = [[13], [3], [25, 30], [1, 11, 12], [14], [26], [26], [19], [], [11], [], [9, 3, 13, 14], [3], [0, 11], [11, 4], [], [], [], [], [29, 7], [], [], [25, 29], [], [], [2, 22], [5, 6], [], [], [19, 22], [2]]
 
         (found, A, B) = party(K)
         self.assertEqual(
@@ -171,7 +169,7 @@ class PartySeatingTest(unittest.TestCase):
                         )
                     )
 
-    def est_multi(self):
+    def test_multi(self):
         for i in range (0, 10000):
             K = generate_list()
             (found, A, B) = party(K)

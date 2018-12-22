@@ -3,8 +3,8 @@
 '''
 Assignment 3: Controlling Maximum Flow
 
-Team Number:
-Student Names:
+Team Number: 44
+Student Names: Erik Ohlsson, Erik Lövgren
 '''
 
 import unittest
@@ -40,8 +40,8 @@ the computed flow from u to v is given by F[u][v].
 def graph_to_dict(G):
     """
     Sig:   graph G(V,E), ==> dict g_util{V:[0..|E|]}
-    Pre:
-    Post:
+    Pre:   G is a directed graph with valid capacity values
+    Post:  G as a dictionary
     Ex:    G = {0 {1: {'capacity': 20}} 1 {0: {'capacity': 20}}}
            graph_to_dict(G) ==> {0{1: 20} 1{0: 20}}
     """
@@ -74,8 +74,8 @@ def graph_to_dict(G):
 def graph_to_RGraph(G, F):
     """
     Sig:   graph G(V,E), dict F{V:[0..|E|]} ==> res_graph{V:[0..|E|]}
-    Pre:
-    Post:
+    Pre:   G is a directed graph, F is a dict. F is a valid flow graph of G
+    Post:  Residual graph of G, with flow F
     Ex:    G = {0{1: 20} 1{0: 20}}
            F = {0{1: 5} 1{0: 5}}
            graph_to_RGraph(G) ==> {0{1: 15} 1{0: 15}}
@@ -106,7 +106,7 @@ def graph_to_RGraph(G, F):
 
     return res_graph
 
-def find_sensitive_edge(res_graph, s, t, g_util, F):
+def find_sensitive_edge(res_graph, s, g_util):
     visited = []
     # List containing all vertices which has been visited by the algorithm
     # Type: int[]
@@ -117,7 +117,6 @@ def find_sensitive_edge(res_graph, s, t, g_util, F):
 
     while stack:
     # Variant: stack
-        print "Iterating on:", current, res_graph[current]
         visited.append(current)
         counter = 0
         limit = len(res_graph[current])
@@ -128,23 +127,19 @@ def find_sensitive_edge(res_graph, s, t, g_util, F):
         for next_vert in res_graph[current]:
         # Invariant: len(res_graph[current])
         #   Variant: len(res_graph[current])-1
-            print "Looking at: ", next_vert
             counter += 1
 
             if next_vert not in visited and res_graph[current][next_vert] > 0:
-                    print "Delving deeper"
-                    current = next_vert
-                    stack.append(current)
-                    break
+                current = next_vert
+                stack.append(current)
+                break
 
             if counter == limit:
                 if stack:
                     stack.pop(-1)
-                    print "End of adjecent vertices, popping stack"
 
         if stack:
             current = stack[-1]
-            print "Stack:", stack
 
     unvisited = []
     # List containing all vertices in graph which has not been visited
@@ -156,68 +151,18 @@ def find_sensitive_edge(res_graph, s, t, g_util, F):
         if key not in visited:
             unvisited.append(key)
 
-    print "Unvisited nodes:", unvisited, "--------------------------"
-
     visited = list(set(visited)) # Remove duplicates
-    '''
+
     for key in visited:
     # Invariant: len(visited)
     #   Variant: len(visited)-1
-        print "visiting key:", key
-        for vertex in res_graph[key]:
-        # Invariant: len(res_graph[key])
-        #   Variant: len(res_graph[key])-1
-            print "visiting vertex:", vertex
-            if vertex in unvisited:
-                print "Found:", key, vertex
-                return key, vertex
-
-
-    for key in unvisited:
-        for vertex in res_graph[key]:
-            if vertex in visited:
-                print "Found:", key, vertex
-                return key, vertex
-    '''
-    for key in visited:
-        print "visiting key:", key
         for vertex in g_util[key]:
-            print "visiting vertex:", vertex
-            #if vertex == 2:
-            #    continue
+        # Invariant: len(g_util[key])
+        #   Variant: len(g_util[key])-1
             if vertex in unvisited:
-                print "Found:", key, vertex
                 return key, vertex
 
     return None, None
-
-def find_path(G, s, t):
-    visited = []
-    current = s
-    stack = [current]
-
-    while(stack):
-        print "Iterating on:", current, G[current]
-        visited.append(current)
-        if current == t:
-            break
-
-        for next_vert in G[current]:
-            print "Looking at:", next_vert
-
-            if next_vert not in visited and G[current][next_vert] > 0:
-                return
-
-
-    return
-
-
-
-def make_residual(G, s, t):
-    flow, path = 0, True
-
-    while(path):
-        flow, path = find_path(G, s, t)
 
 def sensitive(G, s, t, F):
     """
@@ -227,15 +172,10 @@ def sensitive(G, s, t, F):
     Ex:    sensitive(G,0,5,F) ==> (1, 3)
     """
 
-
     g_util = graph_to_dict(G)
     res_graph = graph_to_RGraph(g_util, F)
 
-    print g_util
-    print F
-    print res_graph
-
-    return find_sensitive_edge(res_graph, s, t, g_util, F)
+    return find_sensitive_edge(res_graph, s, g_util)
 
 class SensitiveSanityCheck(unittest.TestCase):
     """
@@ -305,7 +245,7 @@ class SensitiveSanityCheck(unittest.TestCase):
             flow_g,
             "Returned non-sensitive edge ({},{})".format(u,v))
 
-    def est_sanity(self):
+    def test_sanity(self):
         """Sanity check"""
         # The attribute on each edge MUST be called "capacity"
         # (otherwise the max flow algorithm in run_test will fail).
@@ -321,7 +261,7 @@ class SensitiveSanityCheck(unittest.TestCase):
         self.run_test(0,5,draw=True)
 
 
-    def est_shit_test(self): # Works when refactored
+    def test_shit_test(self): # Works when refactored
         self.G.add_edge(0, 2, capacity = 164)
         self.G.add_edge(0, 3, capacity = 209)
         self.G.add_edge(0, 4, capacity = 111)
@@ -351,7 +291,7 @@ class SensitiveSanityCheck(unittest.TestCase):
 
         self.run_test(s,t,draw=True)
 
-    def est_new_test(self): # Returns non sensitive edge
+    def test_new_test(self): # Returns non sensitive edge
         self.G.add_edge(0, 1, capacity = 17)
         self.G.add_edge(0, 2, capacity = 111)
         self.G.add_edge(0, 4, capacity = 67)
@@ -389,7 +329,7 @@ class SensitiveSanityCheck(unittest.TestCase):
 
         self.run_test(s,t,draw=True)
 
-    def est_small(self): # Nedritad, returns non sensitive edge
+    def test_small(self): # Nedritad, returns non sensitive edge
         max_flow = nx.maximum_flow
         G = nx.complete_graph(7, create_using=nx.DiGraph());
 
@@ -446,7 +386,7 @@ class SensitiveSanityCheck(unittest.TestCase):
         print new_flow_g, "<", flow_g, "?"
         # Expected output: new_flow_g < flow_g
 
-    def est_small2(self):
+    def test_small2(self):
         max_flow = nx.maximum_flow
         G = nx.complete_graph(7, create_using=nx.DiGraph());
 
